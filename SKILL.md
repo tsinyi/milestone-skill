@@ -9,12 +9,14 @@ When invoked, immediately start. Do not explain. Do not preamble. Just execute.
 
 ## File Management (Before Step 1)
 
-Check if `milestones/MILESTONE.md` exists. If yes and has entries, parse them and present alongside additional actions:
-- Existing entry → Edit Mode: walk Steps 1-8 showing "当前值: ..." at each, offer "保留"/"修改". Step 1 also includes "返回" (return to file management). Steps 2-7 include "返回上一步". When user selects "修改", follow the same sub-flow as new-entry mode (自己输入 / AI 辅助生成 / [跳过] / 返回上一步). When entering text input mode, first display the current content for reference, then prompt: "输入新内容（直接输入覆盖原内容，输入 .. 返回）".
+Each milestone is stored as a separate `.md` file in `milestones/`, named `YYYY-MM-DD-slug.md`.
+
+Check if `milestones/` has any `.md` files. Parse each file's title from the `## [date] title` line.
+- Existing file → Edit Mode: walk Steps 1-7 with current values. When user selects "修改" for a text field, **first display the full current content**, then prompt for new input.
 - "+ 新建记录" → proceed to Step 1
-- "删除记录" → show a second AskUserQuestion listing all entries (with "取消" option to go back). User picks one, confirm with AskUserQuestion (preview + "确认删除"/"取消"). On "确认删除", remove that entry from the file (the `## [date] title` block through its `---` separator).
-- Entries limited to 3 per screen (4th slot for actions). If >3 entries, use "更多..." overflow. No explicit "取消" — user can Esc.
-- No file / empty → proceed to Step 1
+- "删除记录" → show second AskUserQuestion listing entries. On confirm, `rm` the file directly.
+- Entries limited to 3 per screen (4th slot for actions). No explicit "取消" — user can Esc.
+- No files → proceed to Step 1
 
 ## Step 1: Category — AskUserQuestion
 
@@ -81,7 +83,7 @@ Detect agent name and LLM model(s) from runtime context. Fill dynamically:
 {
   "questions": [{
     "question": "<adapted-text>",
-    "header": "主体",
+    "header": "来源",
     "multiSelect": false,
     "options": [
       {"label": "开发者", "description": "由开发者独立完成"},
@@ -97,7 +99,7 @@ If user selects "其他...", show second AskUserQuestion:
 {
   "questions": [{
     "question": "<adapted-text>",
-    "header": "主体",
+    "header": "来源",
     "multiSelect": false,
     "options": [
       {"label": "<agent> + 辅助工具", "description": "agent 借助 skill / plugin / hook 等"},
@@ -108,33 +110,32 @@ If user selects "其他...", show second AskUserQuestion:
 ```
 Never hardcode agent or model names.
 
-## Step 4: Actor Follow-up
+After user selects an actor type from Step 3:
+- **开发者** → immediately text prompt: "哪些开发者？输入名称，多人用逗号分隔". Record as `developer: name1, name2`. First AskUserQuestion for 自己输入/AI辅助生成/返回上一步.
+- **LLM** → if multiple models, AskUserQuestion to pick. Record as `LLM: model-name`.
+- **agent** → record as detected agent name, no follow-up.
+- **agent + 辅助工具** → text prompt: "使用了哪些辅助工具？". If user doesn't know, scan `~/.claude/skills/` and settings.json. Record as `<agent> + 辅助工具 (name1, name2)`.
 
-Based on Step 3 choice. Each follow-up is a text prompt — but FIRST ask via AskUserQuestion whether user wants AI assist:
+## Step 4: Domain | 领域
 
+Same pattern:
 ```json
 {
   "questions": [{
-    "question": "如何填写？",
-    "header": "填写方式",
+    "question": "如何填写领域？",
+    "header": "领域",
     "multiSelect": false,
     "options": [
-      {"label": "自己输入", "description": "手动输入"},
-      {"label": "AI 辅助生成", "description": "由 Claude Code 根据上下文生成建议"},
-      {"label": "返回上一步", "description": "回到主体选择"}
+      {"label": "自己输入", "description": "手动输入领域，逗号分隔"},
+      {"label": "AI 辅助生成", "description": "由 Claude Code 根据上下文建议"},
+      {"label": "跳过", "description": "不添加领域"}, {"label": "返回上一步", "description": "回到上一步"}
     ]
   }]
 }
 ```
-Then based on choice:
-- **自己输入** → text prompt (see below)
-- **AI 辅助生成** → generate suggestion from conversation context, show it, AskUserQuestion "确认使用" or "自行修改"
-
-Follow-up text prompts by actor type:
-- **开发者** → "哪些开发者？输入名称，多人用逗号分隔". Record as `developer: name1, name2`.
-- **LLM** → if multiple models, AskUserQuestion to pick. Record as `LLM: model-name`.
-- **agent** → record as detected agent name, no text prompt needed.
-- **agent + 辅助工具** → "使用了哪些辅助工具？". If user selected AI assist and doesn't know, scan `~/.claude/skills/` and settings.json, present findings.
+- 自己输入 → text prompt: "领域？（逗号分隔）" → convert to lowercase, trim
+- AI 辅助生成 → generate **max 3** domain suggestions from context, present via AskUserQuestion (multiSelect).
+- 跳过 → leave empty
 
 ## Step 5: Context
 
@@ -178,28 +179,7 @@ Same pattern:
 - AI 辅助生成 → generate, show, confirm/edit
 - 跳过 → leave empty
 
-## Step 7: Tags
-
-Same pattern:
-```json
-{
-  "questions": [{
-    "question": "如何填写标签？",
-    "header": "标签",
-    "multiSelect": false,
-    "options": [
-      {"label": "自己输入", "description": "手动输入标签，逗号分隔"},
-      {"label": "AI 辅助生成", "description": "由 Claude Code 根据上下文建议标签"},
-      {"label": "跳过", "description": "不添加标签"}, {"label": "返回上一步", "description": "回到上一步"}
-    ]
-  }]
-}
-```
-- 自己输入 → text prompt: "标签？（逗号分隔）" → convert to lowercase, trim
-- AI 辅助生成 → generate **max 3** tag suggestions from context, present via AskUserQuestion (multiSelect). If more tags are relevant, add an "其他..." option to let user type additional ones.
-- 跳过 → leave empty
-
-## Step 8: Supplement — Text Prompt
+## Step 7: Supplement — Text Prompt
 
 First AskUserQuestion:
 ```json
@@ -221,13 +201,13 @@ First AskUserQuestion:
 - AI 辅助生成 → generate supplement from context, show, confirm/edit
 - 跳过 → leave empty
 
-## Step 9: Confirm — AskUserQuestion
+## Step 8: Confirm — AskUserQuestion
 
 Show the entry preview as markdown. Use AskUserQuestion:
 ```json
 {
   "questions": [{
-    "question": "确认保存到 milestones/MILESTONE.md？",
+    "question": "确认保存到 milestones/YYYY-MM-DD-slug.md？",
     "header": "确认",
     "multiSelect": false,
     "options": [
@@ -246,8 +226,8 @@ Include the formatted entry as `preview` on "保存".
 
 | 类别 | category |
 |------|----------|
-| 主体 | actor |
-| 标签 | tags |
+| 来源 | actor |
+| 领域 | domain |
 | 时间 | YYYY-MM-DD HH:MM |
 
 ### 背景
@@ -272,6 +252,6 @@ supplement
 
 - Never skip any step
 - Agent/model names always detected from runtime, never hardcoded
-- Save to `milestones/MILESTONE.md` in current project
+- Save to `milestones/YYYY-MM-DD-slug.md` in current project
 - No auto-fill without user choosing AI assist via AskUserQuestion option
 - AI-generated suggestions for AskUserQuestion must not exceed 3 items (leaving 4th slot for "其他..." / navigation). If more ideas exist, pick top 3.
