@@ -13,8 +13,6 @@ A Claude Code skill for recording developer milestones into a structured Markdow
 - Native AskUserQuestion arrow-key menus
 - AI-assisted content generation (title, context, details, tags)
 - Source attribution — who contributed (developer / LLM / agent / agent+tools)
-- Edit and delete existing entries
-- Records stored in `milestones/YYYY-MM-DD-slug.md` at project root
 
 ### 8-Step Flow
 
@@ -46,8 +44,6 @@ Restart Claude Code or `/clear`. Then type `/milestone`.
 - 原生 AskUserQuestion 方向键交互菜单
 - AI 辅助生成内容（标题、背景、详情、标签）
 - 来源归因 — 记录谁完成了这件事（开发者 / LLM / Agent / Agent+工具）
-- 编辑和删除已有记录
-- 存储于项目根目录 `milestones/YYYY-MM-DD-slug.md`
 
 ### 8 步流程
 
