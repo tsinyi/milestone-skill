@@ -16,7 +16,7 @@ A Claude Code skill for recording developer milestones into a structured Markdow
 - Edit and delete existing entries
 - Records stored in `milestones/MILESTONE.md` at project root
 
-### 8-Step Flow
+### 9-Step Flow
 
 1. **Category** — problem solved / solution proposed / key decision / notable event
 2. **Title** — one-line summary with AI assist option
@@ -25,7 +25,8 @@ A Claude Code skill for recording developer milestones into a structured Markdow
 5. **Context** — why this matters, what was at stake
 6. **Details** — multi-paragraph description (optional)
 7. **Tags** — comma-separated, AI-suggested (optional)
-8. **Confirm** — preview and save to `milestones/MILESTONE.md`
+8. **Supplement** — additional notes or follow-up info (optional)
+9. **Confirm** — preview and save to `milestones/MILESTONE.md`
 
 ### Install
 
@@ -49,7 +50,7 @@ Restart Claude Code or `/clear`. Then type `/milestone`.
 - 编辑和删除已有记录
 - 存储于项目根目录 `milestones/MILESTONE.md`
 
-### 8 步流程
+### 9 步流程
 
 1. **类别** — 问题解决 / 方案提出 / 关键决策 / 重要事件
 2. **标题** — 一句话概括，支持 AI 辅助生成
@@ -58,7 +59,8 @@ Restart Claude Code or `/clear`. Then type `/milestone`.
 5. **背景** — 为什么这是里程碑，什么值得记录
 6. **详情** — 多段描述（可选）
 7. **标签** — 逗号分隔，AI 可建议（可选）
-8. **确认** — 预览后保存至 `milestones/MILESTONE.md`
+8. **补充** — 额外说明或后续跟进信息（可选）
+9. **确认** — 预览后保存至 `milestones/MILESTONE.md`
 
 ### 安装
 

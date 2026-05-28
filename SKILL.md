@@ -10,7 +10,7 @@ When invoked, immediately start. Do not explain. Do not preamble. Just execute.
 ## File Management (Before Step 1)
 
 Check if `milestones/MILESTONE.md` exists. If yes and has entries, parse them and present alongside additional actions:
-- Existing entry → Edit Mode: walk Steps 1-7 showing "当前值: ..." at each, offer "保留"/"修改". Step 1 also includes "返回" (return to file management). Steps 2-7 include "返回上一步". When user selects "修改", follow the same sub-flow as new-entry mode (自己输入 / AI 辅助生成 / [跳过] / 返回上一步). When entering text input mode, first display the current content for reference, then prompt: "输入新内容（直接输入覆盖原内容，输入 .. 返回）".
+- Existing entry → Edit Mode: walk Steps 1-8 showing "当前值: ..." at each, offer "保留"/"修改". Step 1 also includes "返回" (return to file management). Steps 2-7 include "返回上一步". When user selects "修改", follow the same sub-flow as new-entry mode (自己输入 / AI 辅助生成 / [跳过] / 返回上一步). When entering text input mode, first display the current content for reference, then prompt: "输入新内容（直接输入覆盖原内容，输入 .. 返回）".
 - "+ 新建记录" → proceed to Step 1
 - "删除记录" → show a second AskUserQuestion listing all entries (with "取消" option to go back). User picks one, confirm with AskUserQuestion (preview + "确认删除"/"取消"). On "确认删除", remove that entry from the file (the `## [date] title` block through its `---` separator).
 - Entries limited to 3 per screen (4th slot for actions). If >3 entries, use "更多..." overflow. No explicit "取消" — user can Esc.
@@ -199,7 +199,29 @@ Same pattern:
 - AI 辅助生成 → generate **max 3** tag suggestions from context, present via AskUserQuestion (multiSelect). If more tags are relevant, add an "其他..." option to let user type additional ones.
 - 跳过 → leave empty
 
-## Step 8: Confirm — AskUserQuestion
+## Step 8: Supplement — Text Prompt
+
+First AskUserQuestion:
+```json
+{
+  "questions": [{
+    "question": "需要补充信息吗？",
+    "header": "补充",
+    "multiSelect": false,
+    "options": [
+      {"label": "自己输入", "description": "手动输入补充内容"},
+      {"label": "AI 辅助生成", "description": "由 Claude Code 根据上下文生成"},
+      {"label": "跳过", "description": "不需要补充"},
+      {"label": "返回上一步", "description": "回到上一步"}
+    ]
+  }]
+}
+```
+- 自己输入 → text prompt: "补充内容？"
+- AI 辅助生成 → generate supplement from context, show, confirm/edit
+- 跳过 → leave empty
+
+## Step 9: Confirm — AskUserQuestion
 
 Show the entry preview as markdown. Use AskUserQuestion:
 ```json
@@ -233,6 +255,9 @@ context
 
 ### 详情
 details
+
+### 补充
+supplement
 ---
 ```
 
