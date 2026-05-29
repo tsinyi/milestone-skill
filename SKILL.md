@@ -12,11 +12,37 @@ When invoked, immediately start. Do not explain. Do not preamble. Just execute.
 Each milestone is stored as a separate `.md` file in `milestones/`, named `YYYY-MM-DD-slug.md`.
 
 Check if `milestones/` has any `.md` files. Parse each file's title from the `## [date] title` line.
-- Existing file → Edit Mode: walk Steps 1-7 with current values. When user selects "修改" for a text field, **first display the full current content**, then prompt for new input.
+- Existing file → enter **Edit Mode** (see below)
 - "+ 新建记录" → proceed to Step 1
 - "删除记录" → show second AskUserQuestion listing entries. On confirm, `rm` the file directly.
 - Entries limited to 3 per screen (4th slot for actions). No explicit "取消" — user can Esc.
 - No files → proceed to Step 1
+
+### Edit Mode
+
+When the user selects an existing entry:
+
+1. Parse all fields from the file and display the full entry as a preview.
+2. Show a **field picker** AskUserQuestion — list all editable fields. User picks which ONE to modify:
+
+```
+可修改字段:
+  - 标题: "设计并实现milestone Skill"
+  - 类别: solution
+  - 来源: developer: Justin
+  - 领域: ai, note, knowledge...
+  - 背景: 创建一个开发过程中...
+  - 详情: 该工具以 /milestone slash command...
+  - 补充: 后续milestone知识库体系设计扩展...
+  - 完成编辑 → 保存
+```
+
+Max 4 per screen. If >4 fields, use "其他字段..." as the 4th option and show the rest on a second screen. Always keep "完成编辑 → 保存" as the last option on the final screen (pushed to "其他..." if needed, or the last slot).
+
+3. After user picks a field → enter the standard editing sub-flow for that field type (自己输入 / AI 辅助生成 / 跳过). **First display the full current content**, then AskUserQuestion.
+4. After modifying, **return to the field picker**. User can modify multiple fields in one edit session. Maintain all changes in memory until save.
+5. When user selects "完成编辑 → 保存", show the full updated entry preview with a diff of what changed. AskUserQuestion: "保存" or "继续修改".
+6. On save → overwrite the original file.
 
 ## Step 1: Category — AskUserQuestion
 
